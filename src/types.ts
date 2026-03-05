@@ -25,6 +25,20 @@ export interface CommunityAction {
   status: 'Pending' | 'In Progress' | 'Completed';
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  importance: string;
+  steps: string[];
+  priority: 'Low' | 'Medium' | 'High';
+  status: 'Active' | 'Completed';
+  category: 'Household' | 'Community' | 'Health' | 'Emergency';
+  icon: string;
+  assignedBy?: string;
+  dueDate?: string;
+}
+
 export interface UserProfile {
   role: UserRole;
   language: string;

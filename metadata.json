@@ -1,5 +1,5 @@
 {
-  "name": "VillageGuard",
-  "description": "An early warning and prevention system for infectious disease outbreaks in rural communities, focusing on Malaria and Cholera.",
+  "name": "OutbreakGuard",
+  "description": "OutbreakGuard is an early warning and prevention system that helps rural communities detect and prepare for infectious disease outbreaks. By monitoring environmental and health signals, it provides actionable steps to protect families and villages.",
   "requestFramePermissions": ["geolocation"]
 }

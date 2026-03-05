@@ -23,11 +23,16 @@ import {
   Home,
   Check,
   Info,
-  X
+  X,
+  ClipboardList,
+  Clock,
+  Flame,
+  CheckCircle,
+  LayoutList
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_RISKS, PREVENTION_STEPS } from './data/mockData';
-import { DiseaseRisk, PreventionStep, CommunityAction, UserProfile, UserRole } from './types';
+import { MOCK_RISKS, PREVENTION_STEPS, MOCK_TASKS } from './data/mockData';
+import { DiseaseRisk, PreventionStep, CommunityAction, UserProfile, UserRole, Task } from './types';
 
 // --- Components ---
 
@@ -82,7 +87,7 @@ const WelcomeScreen = ({ onNext }: { onNext: () => void }) => (
     >
       <Shield className="w-12 h-12 text-emerald-600" />
     </motion.div>
-    <h1 className="text-3xl font-bold mb-2">VillageGuard</h1>
+    <h1 className="text-3xl font-bold mb-2">OutbreakGuard</h1>
     <p className="text-emerald-100 mb-8">Protecting our community from disease outbreaks.</p>
     
     <div className="bg-white/10 p-4 rounded-2xl mb-12 text-left">
@@ -109,7 +114,7 @@ const LanguageSelection = ({ onSelect }: { onSelect: (lang: string) => void }) =
       <p className="text-stone-500">Pick the language you speak best.</p>
     </div>
     <div className="space-y-4">
-      {['English'].map((lang) => (
+      {['English', 'Kiswahili', 'Français', 'Português'].map((lang) => (
         <button 
           key={lang}
           onClick={() => onSelect(lang)}
@@ -139,9 +144,9 @@ const LocationSetup = ({ onNext }: { onNext: (village: string) => void }) => {
     setDetecting(true);
     // Simulate GPS failure/success
     setTimeout(() => {
-      const success = Math.random() > 0.3; // 70% success rate for demo
+      const success = Math.random() > 0; // 70% success rate for demo
       if (success) {
-        setVillage('North Village');
+        setVillage('Kennesaw, GA');
         setDetecting(false);
       } else {
         setDetecting(false);
@@ -151,15 +156,15 @@ const LocationSetup = ({ onNext }: { onNext: (village: string) => void }) => {
   };
 
   const countries = [
-    { name: 'Kenya', flag: '🇰🇪' },
-    { name: 'Tanzania', flag: '🇹🇿' },
-    { name: 'Uganda', flag: '🇺🇬' },
-    { name: 'Malawi', flag: '🇲🇼' }
+    { name: 'Zambia'},
+    { name: 'Tanzania'},
+    { name: 'Uganda'},
+    { name: 'Malawi'}
   ];
 
-  const regions = ['Central', 'Rift Valley', 'Coast', 'Eastern', 'Western'];
-  const districts = ['District A', 'District B', 'District C', 'District D'];
-  const villages = ['Village 1', 'Village 2', 'Village 3', 'Village 4'];
+  const regions = ['Central Province', 'Copperbelt Province', 'Eastern Province', 'Luapula Province', 'Lusaka Province'];
+  const districts = ['Kapiri Mposhi District', 'Luano District', 'Chitambo District', 'Chibombo District'];
+  const villages = ['Lusaka', 'Kitwe', 'Ndola', 'Chingola'];
 
   if (mode === 'manual') {
     return (
@@ -191,7 +196,7 @@ const LocationSetup = ({ onNext }: { onNext: (village: string) => void }) => {
                 onClick={() => { setSelections({...selections, country: c.name}); setManualStep('region'); }}
                 className="w-full p-5 text-left border-2 border-stone-100 rounded-2xl flex items-center hover:border-emerald-500 hover:bg-emerald-50 transition-all"
               >
-                <span className="text-2xl mr-4">{c.flag}</span>
+                <Globe className="w-6 h-6 mr-4 text-stone-400" />
                 <span className="font-bold text-lg">{c.name}</span>
               </button>
             ))}
@@ -379,7 +384,7 @@ const CommunityProfile = ({ onNext }: { onNext: (data: { hasCleanWater: boolean,
 const RoleSelection = ({ onSelect }: { onSelect: (role: UserRole) => void }) => {
   const roles: { id: UserRole, label: string, icon: any, desc: string }[] = [
     { id: 'Member', label: 'Resident', icon: Home, desc: 'Household health alerts' },
-    { id: 'Leader', label: 'Village Leader', icon: Users, desc: 'Coordinate community action' },
+    { id: 'Leader', label: 'Community Leader', icon: Users, desc: 'Coordinate community action' },
     { id: 'HealthWorker', label: 'Health Worker', icon: Activity, desc: 'Report cases & monitor' },
     { id: 'Volunteer', label: 'Volunteer', icon: User, desc: 'Help with prevention tasks' },
   ];
@@ -466,7 +471,7 @@ const Dashboard = ({ profile, onNavigate }: { profile: UserProfile, onNavigate: 
       <div className="flex justify-between items-center mb-6">
         <div>
           <p className="text-emerald-100 text-sm">Welcome back,</p>
-          <h2 className="text-xl font-bold">{profile.role === 'Leader' ? 'Village Leader' : profile.role === 'HealthWorker' ? 'Health Worker' : 'Community Member'}</h2>
+          <h2 className="text-xl font-bold">{profile.role === 'Leader' ? 'Community Leader' : profile.role === 'HealthWorker' ? 'Health Worker' : 'Community Member'}</h2>
         </div>
         <button className="p-2 bg-white/20 rounded-xl">
           <Bell className="w-6 h-6" />
@@ -532,8 +537,9 @@ const Dashboard = ({ profile, onNavigate }: { profile: UserProfile, onNavigate: 
           </button>
         )}
 
-        {(profile.role === 'Member' || profile.role === 'Volunteer') && (
+        {(profile.role === 'Member' || profile.role === 'Volunteer' || profile.role === 'Leader') && (
           <button 
+            onClick={() => onNavigate('tasks')}
             className="p-4 bg-white rounded-2xl border border-stone-200 flex flex-col items-center text-center shadow-sm"
           >
             <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
@@ -651,12 +657,15 @@ const CoordinationScreen = ({ onBack }: { onBack: () => void }) => {
   const [tasks, setTasks] = useState<CommunityAction[]>([
     { id: '1', task: 'Distribute mosquito nets', assignedTo: 'Health Volunteers', status: 'In Progress' },
     { id: '2', task: 'Clean village drainage', assignedTo: 'Sanitation Group', status: 'Pending' },
-    { id: '3', task: 'Check water well quality', assignedTo: 'Village Leader', status: 'Completed' },
+    { id: '3', task: 'Check water well quality', assignedTo: 'Community Leader', status: 'Completed' },
   ]);
 
+  const completedCount = tasks.filter(t => t.status === 'Completed').length;
+  const progress = Math.round((completedCount / tasks.length) * 100);
+
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-y-auto">
-      <div className="p-6 pt-12 flex items-center border-b">
+    <div className="flex-1 flex flex-col bg-stone-50 overflow-y-auto pb-24">
+      <div className="p-6 pt-12 bg-white border-b border-stone-100 flex items-center">
         <button onClick={onBack} className="mr-4 p-2 hover:bg-stone-100 rounded-full">
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -664,26 +673,49 @@ const CoordinationScreen = ({ onBack }: { onBack: () => void }) => {
       </div>
 
       <div className="p-6">
-        <div className="bg-purple-50 p-6 rounded-3xl mb-8">
-          <h3 className="font-bold text-purple-900 mb-2">Village Response Plan</h3>
-          <p className="text-sm text-purple-700">Coordinate with local groups to prepare for the upcoming rainy season.</p>
+        <div className="bg-purple-600 p-6 rounded-[2rem] text-white shadow-lg mb-8">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-xl font-bold mb-1">Village Response Plan</h3>
+              <p className="text-purple-100 text-xs">Rainy Season Preparation</p>
+            </div>
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+          </div>
+          
+          <div className="mb-2 flex justify-between items-end">
+            <span className="text-xs font-bold">Community Progress</span>
+            <span className="text-2xl font-bold">{progress}%</span>
+          </div>
+          <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              className="h-full bg-white"
+            />
+          </div>
         </div>
 
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Active Tasks</h3>
-          <button className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
-            <Plus className="w-5 h-5" />
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-bold text-lg text-stone-800">Active Tasks</h3>
+          <button className="flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md">
+            <Plus className="w-4 h-4" />
+            Assign Task
           </button>
         </div>
 
         <div className="space-y-4">
           {tasks.map(task => (
-            <div key={task.id} className="p-4 border border-stone-100 rounded-2xl flex items-center justify-between">
-              <div>
-                <p className="font-bold text-stone-800">{task.task}</p>
-                <p className="text-xs text-stone-500">Assigned to: {task.assignedTo}</p>
+            <div key={task.id} className="p-4 bg-white border border-stone-100 rounded-2xl shadow-sm flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-bold text-stone-800 text-sm">{task.task}</p>
+                <div className="flex items-center text-[10px] text-stone-500 mt-1">
+                  <User className="w-3 h-3 mr-1" />
+                  Assigned to: {task.assignedTo}
+                </div>
               </div>
-              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                 task.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
                 task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
                 'bg-stone-100 text-stone-500'
@@ -692,6 +724,24 @@ const CoordinationScreen = ({ onBack }: { onBack: () => void }) => {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 p-6 bg-white rounded-3xl border border-stone-100 shadow-sm">
+          <h4 className="font-bold text-stone-800 mb-4">Recent Updates</h4>
+          <div className="space-y-4">
+            <div className="flex gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></div>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                <span className="font-bold text-stone-800">Sanitation Group</span> completed drainage cleaning in Block A.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                <span className="font-bold text-stone-800">Health Volunteers</span> started net distribution in West Village.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -759,6 +809,158 @@ const ReportScreen = ({ onBack }: { onBack: () => void }) => {
           className="w-full py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg mt-4"
         >
           Submit Report
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const TaskScreen = ({ tasks, onBack, onNavigate }: { tasks: Task[], onBack: () => void, onNavigate: (s: string, p?: any) => void }) => {
+  const [filter, setFilter] = useState<'Active' | 'Completed'>('Active');
+  
+  const filteredTasks = tasks.filter(t => t.status === filter);
+  const activeCount = tasks.filter(t => t.status === 'Active').length;
+  const completedCount = tasks.filter(t => t.status === 'Completed').length;
+
+  return (
+    <div className="flex-1 flex flex-col bg-stone-50 overflow-hidden">
+      <div className="p-6 pt-12 bg-white border-b border-stone-100">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <button onClick={onBack} className="mr-4 p-2 hover:bg-stone-100 rounded-full">
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h2 className="text-2xl font-bold">Action Plan</h2>
+          </div>
+          <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+            <ClipboardList className="w-6 h-6 text-emerald-600" />
+          </div>
+        </div>
+
+        <div className="flex p-1 bg-stone-100 rounded-xl">
+          <button 
+            onClick={() => setFilter('Active')}
+            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'Active' ? 'bg-white shadow-sm text-emerald-700' : 'text-stone-500'}`}
+          >
+            Active ({activeCount})
+          </button>
+          <button 
+            onClick={() => setFilter('Completed')}
+            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'Completed' ? 'bg-white shadow-sm text-emerald-700' : 'text-stone-500'}`}
+          >
+            Completed ({completedCount})
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 pb-24">
+        {filteredTasks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center opacity-50">
+            <CheckCircle className="w-16 h-16 mb-4" />
+            <p className="font-medium">No {filter.toLowerCase()} tasks</p>
+          </div>
+        ) : (
+          filteredTasks.map(task => (
+            <motion.div 
+              key={task.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => onNavigate('task-detail', { task })}
+              className="bg-white p-4 rounded-2xl border border-stone-100 shadow-sm mb-4 flex items-center cursor-pointer"
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${
+                task.priority === 'High' ? 'bg-red-50 text-red-600' : 
+                task.priority === 'Medium' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'
+              }`}>
+                {task.icon === 'Droplets' && <Droplets className="w-6 h-6" />}
+                {task.icon === 'Flame' && <Flame className="w-6 h-6" />}
+                {task.icon === 'Users' && <Users className="w-6 h-6" />}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-stone-800">{task.title}</h4>
+                <div className="flex items-center text-xs text-stone-500 mt-1">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Due: {task.dueDate}
+                  {task.assignedBy && (
+                    <>
+                      <span className="mx-2">•</span>
+                      From: {task.assignedBy}
+                    </>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-stone-300" />
+            </motion.div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+const TaskDetailScreen = ({ task, onBack, onToggleComplete }: { task: Task, onBack: () => void, onToggleComplete: (id: string) => void }) => {
+  return (
+    <div className="flex-1 flex flex-col bg-white overflow-hidden">
+      <div className="relative h-48 bg-emerald-600 p-6 flex flex-col justify-end">
+        <button onClick={onBack} className="absolute top-12 left-6 p-2 bg-white/20 backdrop-blur-md rounded-full text-white">
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-white">{task.title}</h2>
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+            {task.icon === 'Droplets' && <Droplets className="w-6 h-6 text-white" />}
+            {task.icon === 'Flame' && <Flame className="w-6 h-6 text-white" />}
+            {task.icon === 'Users' && <Users className="w-6 h-6 text-white" />}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 pb-32">
+        <div className="flex items-center gap-3 mb-6">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+            task.priority === 'High' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+          }`}>
+            {task.priority} Priority
+          </span>
+          <span className="px-3 py-1 bg-stone-100 rounded-full text-xs font-bold text-stone-600 uppercase tracking-wider">
+            {task.category}
+          </span>
+        </div>
+
+        <h3 className="font-bold text-stone-400 text-xs uppercase tracking-widest mb-2">Why this is important</h3>
+        <p className="text-stone-700 mb-8 font-medium leading-relaxed">{task.importance}</p>
+
+        <h3 className="font-bold text-stone-400 text-xs uppercase tracking-widest mb-4">Steps to take</h3>
+        <div className="space-y-4">
+          {task.steps.map((step, idx) => (
+            <div key={idx} className="flex gap-4">
+              <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold shrink-0">
+                {idx + 1}
+              </div>
+              <p className="text-stone-700 text-sm leading-relaxed">{step}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-stone-100">
+        <button 
+          onClick={() => { onToggleComplete(task.id); onBack(); }}
+          className={`w-full py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 transition-all ${
+            task.status === 'Completed' ? 'bg-stone-100 text-stone-500' : 'bg-emerald-600 text-white'
+          }`}
+        >
+          {task.status === 'Completed' ? (
+            <>
+              <CheckCircle className="w-5 h-5" />
+              Completed
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-5 h-5" />
+              Mark as Complete
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -950,6 +1152,7 @@ const MapScreen = ({ onBack, onNavigate }: { onBack: () => void, onNavigate: (s:
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [screenParams, setScreenParams] = useState<any>(null);
+  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
   const [profile, setProfile] = useState<UserProfile>({
     role: 'Member',
     language: 'English',
@@ -997,6 +1200,12 @@ export default function App() {
         return <ReportScreen onBack={() => navigate('dashboard')} />;
       case 'map':
         return <MapScreen onBack={() => navigate('dashboard')} onNavigate={navigate} />;
+      case 'tasks':
+        return <TaskScreen tasks={tasks} onBack={() => navigate('dashboard')} onNavigate={navigate} />;
+      case 'task-detail':
+        return <TaskDetailScreen task={screenParams?.task} onBack={() => navigate('tasks')} onToggleComplete={(id) => {
+          setTasks(prev => prev.map(t => t.id === id ? { ...t, status: t.status === 'Active' ? 'Completed' : 'Active' } : t));
+        }} />;
       default:
         return <Dashboard profile={profile} onNavigate={navigate} />;
     }
@@ -1017,10 +1226,13 @@ export default function App() {
       </AnimatePresence>
 
       {/* Navigation Bar (Only shown after onboarding) */}
-      {profile.onboardingComplete && ['dashboard', 'risk-details', 'prevention', 'coordination', 'report', 'map'].includes(currentScreen) && (
-        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-stone-100 px-6 py-4 flex justify-between items-center z-40">
+      {profile.onboardingComplete && ['dashboard', 'risk-details', 'prevention', 'coordination', 'report', 'map', 'tasks', 'task-detail'].includes(currentScreen) && (
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-stone-100 px-4 py-4 flex justify-between items-center z-40">
           <button onClick={() => navigate('dashboard')} className={`p-2 rounded-xl ${currentScreen === 'dashboard' ? 'text-emerald-600 bg-emerald-50' : 'text-stone-400'}`}>
             <Activity className="w-6 h-6" />
+          </button>
+          <button onClick={() => navigate('tasks')} className={`p-2 rounded-xl ${['tasks', 'task-detail'].includes(currentScreen) ? 'text-emerald-600 bg-emerald-50' : 'text-stone-400'}`}>
+            <LayoutList className="w-6 h-6" />
           </button>
           <button onClick={() => navigate('map')} className={`p-2 rounded-xl ${currentScreen === 'map' ? 'text-emerald-600 bg-emerald-50' : 'text-stone-400'}`}>
             <MapIcon className="w-6 h-6" />
