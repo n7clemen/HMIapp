@@ -972,19 +972,19 @@ const MapScreen = ({ onBack, onNavigate }: { onBack: () => void, onNavigate: (s:
   const [selectedZone, setSelectedZone] = useState<any>(null);
 
   const zones = [
-    { id: 'north', name: 'North Village', risk: 'High', x: '40%', y: '25%', disease: 'Malaria' },
-    { id: 'east', name: 'East Settlement', risk: 'Medium', x: '70%', y: '45%', disease: 'Cholera' },
-    { id: 'south', name: 'South Valley', risk: 'Low', x: '35%', y: '70%', disease: 'None' },
-    { id: 'west', name: 'West Plains', risk: 'High', x: '15%', y: '50%', disease: 'Malaria' },
+    { id: 'north', name: 'Chingola', risk: 'High', x: '40%', y: '25%', disease: 'Malaria' },
+    { id: 'east', name: 'Petauka', risk: 'Medium', x: '70%', y: '45%', disease: 'Cholera' },
+    { id: 'south', name: 'Lusaka', risk: 'Low', x: '35%', y: '70%', disease: 'None' },
+    { id: 'west', name: 'Lambezi', risk: 'High', x: '15%', y: '50%', disease: 'Malaria' },
   ];
 
   const waterSources = [
     { id: 'w1', name: 'Main Well', x: '55%', y: '55%', status: 'Safe' },
-    { id: 'w2', name: 'River Access', x: '20%', y: '30%', status: 'Contaminated' },
+    { id: 'w2', name: 'River Access', x: '20%', y: '30%', status: 'Possibly Contaminated' },
   ];
 
   const clinics = [
-    { id: 'c1', name: 'Central Clinic', x: '50%', y: '45%' },
+    { id: 'c1', name: 'Central Clinic', x: '35%', y: '70%' },
   ];
 
   return (
