@@ -139,9 +139,9 @@ const LocationSetup = ({ onNext }: { onNext: (village: string) => void }) => {
     setDetecting(true);
     // Simulate GPS failure/success
     setTimeout(() => {
-      const success = True; // 70% success rate for demo
+      const success = Math.random() > 0.3; // 70% success rate for demo
       if (success) {
-        setVillage('Kennesaw, GA');
+        setVillage('North Village');
         setDetecting(false);
       } else {
         setDetecting(false);
@@ -151,10 +151,10 @@ const LocationSetup = ({ onNext }: { onNext: (village: string) => void }) => {
   };
 
   const countries = [
-    { name: 'Zambia'},
-    { name: 'Tanzania'},
-    { name: 'Uganda'},
-    { name: 'Malawi'}
+    { name: 'Kenya', flag: '🇰🇪' },
+    { name: 'Tanzania', flag: '🇹🇿' },
+    { name: 'Uganda', flag: '🇺🇬' },
+    { name: 'Malawi', flag: '🇲🇼' }
   ];
 
   const regions = ['Central', 'Rift Valley', 'Coast', 'Eastern', 'Western'];
