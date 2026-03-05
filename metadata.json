@@ -1,0 +1,5 @@
+{
+  "name": "VillageGuard",
+  "description": "An early warning and prevention system for infectious disease outbreaks in rural communities, focusing on Malaria and Cholera.",
+  "requestFramePermissions": ["geolocation"]
+}
