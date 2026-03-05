@@ -109,7 +109,7 @@ const LanguageSelection = ({ onSelect }: { onSelect: (lang: string) => void }) =
       <p className="text-stone-500">Pick the language you speak best.</p>
     </div>
     <div className="space-y-4">
-      {['English', 'Kiswahili', 'Français', 'Português'].map((lang) => (
+      {['English'].map((lang) => (
         <button 
           key={lang}
           onClick={() => onSelect(lang)}
